@@ -60,19 +60,29 @@ jQuery(document).ready(function($) {
 			mailgunMessageDiv.hide().html('');	
 		};
 		
+		var hideMailgunMessageEvent = function(e) {
+			if( e.data.focusoutEvent && 500 > e.timeStamp - e.data.focusoutEvent.timeStamp )
+				return;
+			
+			$(this).off('click focusin', hideMailgunMessageEvent);
+			hideMailgunMessage();
+		};
+		
 		mailgunQuestion.find('.did-you-mean').css('cursor', 'pointer').on('click', function() {
 			emailField.val($(this).text());
+			errorElements.removeClass('error');
 			hideMailgunMessage();
 		});
 		
 		emailField.mailgun_validator({
 			api_key: shoppAdvValid.mailgunPubKey,
-			in_progress: function(){
+			in_progress: function(e){
+					$(window).off('click focusin', hideMailgunMessageEvent);
 					hideMailgunMessage();
 					emailField.setDisabled(true);
 					errorElements.removeClass('error');
 				},
-			success: function(data){ 		
+			success: function(data, e){ 		
 					if( console ) console.log(data);
 					
 					var emailParts = data.address.split('@'),
@@ -82,28 +92,28 @@ jQuery(document).ready(function($) {
 						if( data.did_you_mean ) {
 							emailField.val(data.did_you_mean);
 							showMailgunMessage(mailgunCorrection, {'didYouMean': data.did_you_mean});
-							emailField.setDisabled(false);
-							return;
+						}
+					} else {
+						if( !data.is_valid )
+							errorElements.addClass('error');
+						
+						if( data.did_you_mean ) {
+							showMailgunMessage(mailgunQuestion, {'didYouMean': data.did_you_mean});
+						} else if( !data.is_valid ) {
+							showMailgunMessage(mailgunError, {'message': 'Invalid email address.'});
+						} else {
+							showMailgunMessage(mailgunVerified);	
 						}
 					}
 					
-					if( !data.is_valid )
-						errorElements.addClass('error');
-					
-					if( data.did_you_mean ) {
-						showMailgunMessage(mailgunQuestion, {'didYouMean': data.did_you_mean});
-					} else if( !data.is_valid ) {
-						showMailgunMessage(mailgunError, {'message': 'Invalid email address.'});
-					} else {
-						showMailgunMessage(mailgunVerified);	
-					}
-					
 					emailField.setDisabled(false);
+					$(window).on('click focusin', {'focusoutEvent': e}, hideMailgunMessageEvent);
 				},
-			error: function(error){
+			error: function(error, e){
 					errorElements.addClass('error');
 					showMailgunMessage(mailgunError, {'message': error});
 					emailField.setDisabled(false);
+					$(window).on('click focusin', {'focusoutEvent': e}, hideMailgunMessageEvent);
 				},
 		});
 	}
