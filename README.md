@@ -17,7 +17,7 @@ Given an arbitrary address, Mailgun will validate the address based on:
 
 ### Advanced Email Validation via Mailgun API
 
-### How to use the email validator on your form
+### How to use the email validator on your Shopp
 
 1. Sign up for a Mailgun account get a public API key
 2. Add ```defined('MAILGUN_PUBLIC_API_KEY')``` into your wp-config.php file (with the API key from the previous step)
