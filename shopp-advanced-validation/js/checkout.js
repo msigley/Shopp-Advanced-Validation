@@ -89,6 +89,7 @@ jQuery(document).ready(function($) {
 						missingTLD = false;
 					
 					if( -1 === emailParts[1].indexOf('.') ) {
+						errorElements.addClass('error');
 						if( data.did_you_mean ) {
 							emailField.val(data.did_you_mean);
 							showMailgunMessage(mailgunCorrection, {'didYouMean': data.did_you_mean});
