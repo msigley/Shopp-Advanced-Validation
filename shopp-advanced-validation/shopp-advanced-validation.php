@@ -65,7 +65,7 @@ class ShoppAdvancedValidation {
 			$version
 			);
 		
-		if( is_checkout_page() && '192.182.249.226' == $_SERVER['REMOTE_ADDR'] ) {
+		if( is_checkout_page() ) {
 			wp_enqueue_script($this->plugin_slug.'_checkout');
 			
 			wp_localize_script($this->plugin_slug.'_checkout', 'shoppAdvValid', 
