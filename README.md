@@ -1,4 +1,4 @@
-# Shopp-Advanced-Validation
+# Shopp Advanced Validation
 Wordpress plugin to add advanced input validation to Shopp's checkout page. (http://shopplugin.net)
 
 ## Features
