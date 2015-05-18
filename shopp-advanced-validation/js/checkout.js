@@ -25,15 +25,13 @@ jQuery(document).ready(function($) {
 		
 		if( generatedCSS ) {
 			emailParent.css({'position': 'relative'});
-			console.log(emailField.css('font-size'));
-			console.log(emailField.css('font-family'));
+			
 			mailgunMessageDiv.css({	'position': 'absolute', 
-				'top': emailField.outerHeight(), 
+				'top': emailField.position().top + emailField.outerHeight(), 
 				'left': 0,
 				'box-sizing': 'border-box',
 				'width': emailField.outerWidth(),
 				'padding': '5px',
-				'margin': '10px 0 0 0',
 				'background': '#333',
 				'color': '#FFF'
 			});	
