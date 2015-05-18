@@ -10,10 +10,10 @@ http://www.mailgun.com/email-validation
 ## Features
 Given an arbitrary address, Mailgun will validate the address based on:
 
-*Syntax checks (RFC defined grammar)
-*DNS validation
-*Spell checks
-*Email Service Provider (ESP) specific local-part grammar (if available)
+* Syntax checks (RFC defined grammar)
+* DNS validation
+* Spell checks
+* Email Service Provider (ESP) specific local-part grammar (if available)
 
 ### Advanced Email Validation via Mailgun API
 
