@@ -19,7 +19,7 @@ Email Service Provider (ESP) specific local-part grammar (if available)
 
 ### How to use the email validator on your form
 
-1. Sign up for a Mailgun account and insert your public API key
-2. Add ```defined('MAILGUN_PUBLIC_API_KEY')``` into your wp-config.php file
+1. Sign up for a Mailgun account get a public API key
+2. Add ```defined('MAILGUN_PUBLIC_API_KEY')``` into your wp-config.php file (with the API key from the previous step)
 3. Load the shopp-advanced-validation folder into your WP plugins directory and activate the plugin in the WP panel
 4. ```#mailgun-message``` can be customized to include your own HTML/CSS.
