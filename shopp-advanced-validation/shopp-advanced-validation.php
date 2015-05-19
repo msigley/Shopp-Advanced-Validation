@@ -3,7 +3,7 @@
 Plugin Name: Shopp Advanced Validation
 Plugin URI: http://github.com/msigley/
 Description: Implements advanced email validation on the shopp checkout page.
-Version: 1.0.0
+Version: 1.1.0
 Author: Matthew Sigley
 Author URI: http://github.com/msigley/
 License: GPLv3
@@ -36,7 +36,8 @@ class ShoppAdvancedValidation {
 		//Setup local filepath
 		$this->path = plugin_dir_path(__FILE__);
 		
-		add_action( 'wp_enqueue_scripts', array( $this, 'css_js' ) );
+		add_action( 'init', array( $this, 'register_css_js' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_css_js' ) );
 	}
 	
 	static function &object( $args=array() ) {
@@ -47,7 +48,7 @@ class ShoppAdvancedValidation {
 		return self::$object;
 	}
 	
-	public function css_js () {
+	public function register_css_js () {
 		//Use YYYYMMDD as version for ~24 hour brower caching.
 		$version = date('Ymd', current_time('timestamp'));
 		$protocol = 'http';
@@ -65,12 +66,16 @@ class ShoppAdvancedValidation {
 			$version
 			);
 		
-		if( is_checkout_page() ) {
-			wp_enqueue_script($this->plugin_slug.'_checkout');
-			
-			wp_localize_script($this->plugin_slug.'_checkout', 'shoppAdvValid', 
+		wp_localize_script($this->plugin_slug.'_checkout', 'shoppAdvValid', 
 				array( 'mailgunPubKey' => $this->mailgun_public_api_key )
 				);
+			
+	}
+	
+	public function enqueue_css_js () {
+		if( is_checkout_page() || 
+			( is_account_page() && 'profile' == ShoppStorefront()->account['request'] ) ) {
+			wp_enqueue_script($this->plugin_slug.'_checkout');
 		}
 	}
 }
