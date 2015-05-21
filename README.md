@@ -1,8 +1,8 @@
 # Shopp Advanced Validation
 Wordpress plugin to add advanced input validation to Shopp's checkout page. (http://shopplugin.net)
 
-# Installation
-Load the shopp-advanced-validation folder into your WP plugins directory and activate the plugin in the WP panel
+### Installation
+* Load the shopp-advanced-validation folder into your WP plugins directory and activate the plugin in the WP panel
 
 ## 1. Advanced Email Validation via Mailgun API
 
