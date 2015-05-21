@@ -60,16 +60,25 @@ class ShoppAdvancedValidation {
 				array('jquery'),
 				$version
 				);
+		wp_register_script($this->plugin_slug.'_complexify_banlist', 
+				$this->url.'js/jquery.complexify.banlist.js',
+				false,
+				$version
+				);
+		wp_register_script($this->plugin_slug.'_complexify', 
+				$this->url.'js/jquery.complexify.js',
+				array('jquery', $this->plugin_slug.'_complexify_banlist'),
+				$version
+				);
 		wp_register_script($this->plugin_slug.'_checkout', 
-			$this->url.'js/checkout.js',
-			array($this->plugin_slug.'_mailgun_validator'),
-			$version
-			);
+				$this->url.'js/checkout.js',
+				array($this->plugin_slug.'_mailgun_validator', $this->plugin_slug.'_complexify'),
+				$version
+				);
 		
 		wp_localize_script($this->plugin_slug.'_checkout', 'shoppAdvValid', 
 				array( 'mailgunPubKey' => $this->mailgun_public_api_key )
 				);
-			
 	}
 	
 	public function enqueue_css_js () {
