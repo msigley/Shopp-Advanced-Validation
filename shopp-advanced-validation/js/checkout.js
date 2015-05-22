@@ -11,8 +11,10 @@ jQuery(document).ready(function($) {
     };
 	
 	var emailField = $('#email');
-		emailLabel = $('label[for="email"]'),
+		emailLabel = emailField.siblings('label[for="email"]'),
 		emailParent = emailField.parent();
+	if( !emailLabel.length )
+		emailLabel = $('label[for="email"]');
 	if( emailField.length ) {
 		var errorElements = $().add([emailField.get(0), emailLabel.get(0)]);
 		mailgunMessageDiv = $('#mailgun-message').hide(),
@@ -120,11 +122,16 @@ jQuery(document).ready(function($) {
 	}
 	
 	var passwordField = $('#password'),
-		passwordLabel = $('label[for="password"]'),
+		passwordLabel = passwordField.siblings('label[for="password"]'),
 		passwordParent = passwordField.parent(),
 		confirmPasswordField = $('#confirm-password'),
-		confirmPasswordLabel = $('label[for="confirm-password"]'),
+		confirmPasswordLabel = confirmPasswordField.siblings('label[for="confirm-password"]'),
 		confirmPasswordParent = confirmPasswordField.parent();
+	if( !passwordLabel.length )
+		passwordLabel = $('label[for="password"]');
+	if( !confirmPasswordLabel.length )
+		confirmPasswordLabel = $('label[for="confirm-password"]');
+	
 	if( passwordField.length ) {
 		var passwordStrengthDiv = $('#password-strength');
 		if( !passwordStrengthDiv.length ) {
