@@ -3,7 +3,7 @@
 Plugin Name: Shopp Advanced Validation
 Plugin URI: http://github.com/msigley/
 Description: Implements advanced email validation on the shopp checkout page.
-Version: 1.2.0
+Version: 1.2.1
 Author: Matthew Sigley
 Author URI: http://github.com/msigley/
 License: GPLv3
