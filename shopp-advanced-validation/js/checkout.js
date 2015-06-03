@@ -9,6 +9,20 @@ jQuery(document).ready(function($) {
         });
         return jQuery(this);
     };
+
+        $.ajax({ // FreeGeoIP
+            url: '//freegeoip.net/json/',
+            type: 'POST',
+            dataType: 'jsonp',
+            success: function(location) {
+                if ((!$('#billing-city').val()) && (!$('#billing-state-menu').val())) { // Only for first page load (city and state must be blank)
+                    $('#billing-country').val(location.country_code); // Set country first (required)
+                    $('#billing-state-menu').val(location.region_code); // Set state
+                    $('#billing-city').val(location.city); // Set city
+                    $('#billing-postcode').val(location.zip_code); // Set zip
+                }
+            }
+        });
 	
 	var emailField = $('#email');
 		emailLabel = emailField.siblings('label[for="email"]'),
