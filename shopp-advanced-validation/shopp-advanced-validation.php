@@ -61,7 +61,7 @@ class ShoppAdvancedValidation {
 				$version
 				);
 		wp_register_script($this->plugin_slug.'_complexify_banlist', 
-				$this->url.'js/jquery.complexify.banlist.js',
+				$this->url.'js/jquery.complexify.banlist.rot47.js',
 				false,
 				$version
 				);
