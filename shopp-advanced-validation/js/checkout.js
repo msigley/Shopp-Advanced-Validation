@@ -128,9 +128,9 @@ jQuery(document).ready(function($) {
 		confirmPasswordLabel = confirmPasswordField.siblings('label[for="confirm-password"]'),
 		confirmPasswordParent = confirmPasswordField.parent();
 	if( !passwordLabel.length )
-		passwordLabel = $('label[for="password"]');
+		passwordLabel = passwordField;
 	if( !confirmPasswordLabel.length )
-		confirmPasswordLabel = $('label[for="confirm-password"]');
+		confirmPasswordLabel = confirmPasswordField;
 	
 	if( passwordField.length ) {
 		var passwordStrengthDiv = $('#password-strength');
