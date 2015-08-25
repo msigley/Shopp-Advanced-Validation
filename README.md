@@ -52,6 +52,9 @@ https://google-developers.appspot.com/maps/documentation/javascript/examples/ful
 ### Features
 Dropdown autocomplete address list based on user's current location, autofills remaining fields once an address is selected.
 
+### Quirks
+Lookup chokes if you add in apartment numbers since these are not supported by Google. Also, would be good to ensure that there is no effect if the parent Google lib cannot load due to firewall (e.g., China).
+
 ### How to use the Google places autocomplete on your Shopp
 
 Already enabled. You can include ```&placeholder=Enter your address``` in your checkout.php template for the billing-address and/or shipping-address fields for additional user prompting.
