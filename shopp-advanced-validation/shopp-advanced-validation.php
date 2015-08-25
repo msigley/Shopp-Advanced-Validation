@@ -60,6 +60,15 @@ class ShoppAdvancedValidation {
 				array('jquery'),
 				$version
 				);
+		wp_register_script($this->plugin_slug.'_autocomplete_lib',
+                                '//maps.googleapis.com/maps/api/js?libraries=places',
+                                array('jquery')
+                                );
+                wp_register_script($this->plugin_slug.'_autocomplete',
+                                $this->url.'js/autocomplete.js',
+                                array($this->plugin_slug.'_autocomplete_lib'),
+                                $version
+                                );		
 		wp_register_script($this->plugin_slug.'_complexify_banlist', 
 				$this->url.'js/jquery.complexify.banlist.rot47.js',
 				false,
@@ -72,7 +81,7 @@ class ShoppAdvancedValidation {
 				);
 		wp_register_script($this->plugin_slug.'_checkout', 
 				$this->url.'js/checkout.js',
-				array($this->plugin_slug.'_mailgun_validator', $this->plugin_slug.'_complexify'),
+				array($this->plugin_slug.'_mailgun_validator', $this->plugin_slug.'_complexify', $this->plugin_slug.'_autocomplete'),
 				$version
 				);
 		
