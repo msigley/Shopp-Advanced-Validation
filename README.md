@@ -43,3 +43,15 @@ Casually enforces password strength via Complexity algorithm and also banned pas
 ### How to use the password strength indicator on your Shopp
 
 ```<div id="password-strength"></div>``` and/or ```<div id="password-match"></div>``` can be customized to include your own HTML/CSS.
+
+## 3. Google Places address auto complete.
+
+This is based on the Google places autocomplete:
+https://google-developers.appspot.com/maps/documentation/javascript/examples/full/places-autocomplete-addressform
+
+### Features
+Dropdown autocomplete address list based on user's current location, autofills remaining fields once an address is selected.
+
+### How to use the Google places autocomplete on your Shopp
+
+Already enabled. You can include ```&placeholder=Enter your address``` in your checkout.php template for the billing-address and/or shipping-address fields for additional user prompting.
