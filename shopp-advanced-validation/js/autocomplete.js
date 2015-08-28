@@ -1,120 +1,154 @@
 jQuery(document).ready(function($) {
-            // This example displays an address form, using the autocomplete feature
-            // of the Google Places API to help users fill in the information.
+    // This example uses the autocomplete feature
+    // of the Google Places API to help users fill in the information.
 
-            var placeSearch, autocomplete_bill, autocomplete_ship;
-            var componentForm = {
-                street_number: 'short_name',
-                route: 'long_name',
-                locality: 'long_name',
-                administrative_area_level_1: 'short_name',
-                country: 'short_name',
-                postal_code: 'short_name'
-            };
-            var Shoppnames = {
-                street_number: '-address',
-                route: '-address',
-                locality: '-city',
-                administrative_area_level_1: '-state-menu',
-                country: '-country',
-                postal_code: '-postcode'
-            };
+    var flag_prompted = false;
+    var defaultLat, defaultLng, defaultRad; // geolocation
+    var autocomplete_bill, autocomplete_ship;
 
-            function initAutocomplete() {
-                // Create the autocomplete object, restricting the search
-                // to geographical location types.
+    var componentForm = {
+        street_number: 'short_name',
+        route: 'long_name',
+        locality: 'long_name',
+        administrative_area_level_1: 'short_name',
+        country: 'short_name',
+        postal_code: 'short_name'
+    };
 
-                // listener for billing address
-                if (document.getElementById('billing-address') !== null) {
+    var Shopp_form = {
+        street_number: '-address',
+        route: '-address',
+        locality: '-city',
+        administrative_area_level_1: '-state-menu',
+        country: '-country',
+        postal_code: '-postcode'
+    };
 
-                    $("#billing-address").on('focus', function() {
-                        geolocate(autocomplete_bill);
-                    });
+    function initAutocomplete() {
+        // Create the autocomplete object, restricting the search
+        // to geographical location types.
 
-                    autocomplete_bill = new google.maps.places.Autocomplete((document.getElementById('billing-address')), {
-                        types: ['geocode']
-                    });
+        // listener for billing address
+        if (document.getElementById('billing-address') != null) {
 
-                    // When the user selects an address from the dropdown,
-                    // populate the address fields in the form.
-                    google.maps.event.addListener(autocomplete_bill, 'place_changed', function() {
-                        fillInAddress(autocomplete_bill, 'billing');
-                    });
+            $("#billing-address").on('focus', function() {
+                if (!flag_prompted) geolocate();
+                if (defaultLat) setradius(autocomplete_bill);
+            });
 
-                }
+            autocomplete_bill = new google.maps.places.Autocomplete((document.getElementById('billing-address')), {
+                types: ['geocode']
+            });
 
-                // lister for shipping address
-                if (document.getElementById('shipping-address') !== null) {
+            // When the user selects an address from the dropdown,
+            // populate the address fields in the form.
+            google.maps.event.addListener(autocomplete_bill, 'place_changed', function() {
+                fillInAddress(autocomplete_bill, 'billing');
+            });
 
-                    $("#shipping-address").on('focus', function() {
-                        geolocate(autocomplete_ship);
-                     });
+        }
 
-                     autocomplete_ship = new google.maps.places.Autocomplete((document.getElementById('shipping-address')), {
-                         types: ['geocode']
-                     });
+        // lister for shipping address
+        if (document.getElementById('shipping-address') != null) {
 
-                    // When the user selects an address from the dropdown,
-                    // populate the address fields in the form.
-                     google.maps.event.addListener(autocomplete_ship, 'place_changed', function() {
-                         fillInAddress(autocomplete_ship, 'shipping');
-                     });
-                }
+            $("#shipping-address").on('focus', function() {
+                if (!flag_prompted) geolocate();
+                if (defaultLat) setradius(autocomplete_ship);
+            });
+
+            autocomplete_ship = new google.maps.places.Autocomplete((document.getElementById('shipping-address')), {
+                types: ['geocode']
+            });
+
+            // When the user selects an address from the dropdown,
+            // populate the address fields in the form.
+            google.maps.event.addListener(autocomplete_ship, 'place_changed', function() {
+                fillInAddress(autocomplete_ship, 'shipping');
+            });
+        }
+    }
+
+    function fillInAddress(ref, form) {
+        // Get the place details from the autocomplete object.
+        var place = ref.getPlace();
+
+        for (var component in componentForm) {
+            document.getElementById(form + Shopp_form[component]).value = '';
+            document.getElementById(form + Shopp_form[component]).disabled = false;
+        }
+
+        // Get each component of the address from the place details
+        // and fill the corresponding field on the form.
+        var arr = {};
+
+        for (var i = 0; i < place.address_components.length; i++) {
+            var addressType = place.address_components[i].types[0];
+            if (componentForm[addressType]) {
+                var val = place.address_components[i][componentForm[addressType]];
+                arr[addressType] = val;
             }
+        }
 
-            function fillInAddress(ref, form) {
-                // Get the place details from the autocomplete object.
-                var place = ref.getPlace();
+        if (arr["street_number"] != null) {
+            arr["route"] = (arr["route"] != null) ? arr["street_number"] + " " + arr["route"] : arr["street_number"];
+            delete arr["street_number"];
+        }
 
-                for (var component in componentForm) {
-                    document.getElementById(form + Shoppnames[component]).value = '';
-                    document.getElementById(form + Shoppnames[component]).disabled = false;
+        if (arr["country"] != null) {
+            $('#' + form + Shopp_form["country"]).val(arr["country"]).trigger('change'); // country needs to be set first
+            $('#' + form + '-xaddress').focus(); // reset focus to 2nd address field
+            delete arr["country"]; // remove from list
+        }
+
+        for (var key in arr) {
+            $('#' + form + Shopp_form[key]).val(arr[key]);
+        }
+
+    }
+
+    // Bias the autocomplete object to the user's geographical location,
+    // as supplied by the browser's 'navigator.geolocation' object.
+    function geolocate() {
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                defaultLat = position.coords.latitude;
+                defaultLng = position.coords.longitude;
+                defaultRad = position.coords.accuracy;
+            });
+        }
+
+        if (defaultLat == null) { // freeGeoIP.net fallback
+            $.ajax({
+                url: 'https://freegeoip.net/json/?callback=',
+                dataType: 'json',
+                type: 'GET',
+                crossDomain: true,
+                success: function(data) {
+                    defaultLat = data.latitude;
+                    defaultLng = data.longitude;
                 }
+            });
+        }
 
-                // Get each component of the address from the place details
-                // and fill the corresponding field on the form.
+        flag_prompted = true; // only ask once
 
-                var street_number;
+    }
 
-                for (var i = 0; i < place.address_components.length; i++) {
-                    var addressType = place.address_components[i].types[0];
-                    if (componentForm[addressType]) {
-                        var val = place.address_components[i][componentForm[addressType]];
-
-                        // presume there will not be a blank street number, but could be blank street
-                        // a little hacky for now
-                        if (addressType == 'street_number' && val != null) {
-                            street_number = val + ' ';
-                        } else {
-                            if (addressType == 'route' && street_number != null) {
-                                val = street_number + val;
-                            }
-                            document.getElementById(form + Shoppnames[addressType]).value = val;
-                        }
-                    }
-                }
-            }
-
-            // Bias the autocomplete object to the user's geographical location,
-            // as supplied by the browser's 'navigator.geolocation' object.
-            function geolocate(ref) {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function(position) {
-                        var geolocation = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        };
-                        var circle = new google.maps.Circle({
-                            center: geolocation,
-                            radius: position.coords.accuracy
-                        });
-                        ref.setBounds(circle.getBounds());
-                    });
-                }
-
-            }
-
-            initAutocomplete();
-            // or use <script src="https://maps.googleapis.com/maps/api/js?signed_in=true&libraries=places&callback=initAutocomplete" async defer><\/script>
-
+    function setradius(ref) {
+        var circle = new google.maps.Circle({
+            center: {
+                lat: defaultLat,
+                lng: defaultLng
+            },
+            radius: defaultRad
         });
+        ref.setBounds(circle.getBounds());
+    }
+
+    if (google && google.maps) {
+        // Google maps loaded
+        initAutocomplete();
+    }
+
+});
