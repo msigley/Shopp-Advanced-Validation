@@ -28,6 +28,9 @@ jQuery(document).ready(function($) {
         // Create the autocomplete object, restricting the search
         // to geographical location types.
 
+        // get freegeoip response and set default country and state
+        freegeoip();
+
         // listener for billing address
         if (document.getElementById('billing-address') != null) {
 
@@ -89,36 +92,27 @@ jQuery(document).ready(function($) {
             }
         }
 
+        // combine street number with street
         if (arr["street_number"] != null) {
             arr["route"] = (arr["route"] != null) ? arr["street_number"] + " " + arr["route"] : arr["street_number"];
             delete arr["street_number"];
         }
 
+        // country needs to be set first
         if (arr["country"] != null) {
-            $('#' + form + Shopp_form["country"]).val(arr["country"]).trigger('change'); // country needs to be set first
+            $('#' + form + Shopp_form["country"]).val(arr["country"]).trigger('change'); // trigger Shopp change event to reload list
             $('#' + form + '-xaddress').focus(); // reset focus to 2nd address field
             delete arr["country"]; // remove from list
         }
 
         for (var key in arr) {
+            // set other fields
             $('#' + form + Shopp_form[key]).val(arr[key]);
         }
 
     }
 
-    // Bias the autocomplete object to the user's geographical location,
-    // as supplied by the browser's 'navigator.geolocation' object.
-    function geolocate() {
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                defaultLat = position.coords.latitude;
-                defaultLng = position.coords.longitude;
-                defaultRad = position.coords.accuracy;
-            });
-        }
-
-        if (defaultLat == null) { // freeGeoIP.net fallback
+    function freegeoip() {
             $.ajax({
                 url: 'https://freegeoip.net/json/?callback=',
                 dataType: 'json',
@@ -127,12 +121,29 @@ jQuery(document).ready(function($) {
                 success: function(data) {
                     defaultLat = data.latitude;
                     defaultLng = data.longitude;
-                }
+                    $("#billing-city").val() || $("#billing-state-menu").val() || ($("#billing-country").val(data.country_code), $(
+"#billing-state-menu").val(data.region_code));
+                    $("#shipping-city").val() || $("#shipping-state-menu").val() || ($("#shipping-country").val(data.country_code), $(
+"#shipping-state-menu").val(data.region_code));
+                },
+                timeout: 3000 // 3 second timeout
+            });
+    }
+
+    // Bias the autocomplete object to the user's geographical location,
+    // as supplied by the browser's 'navigator.geolocation' object.
+    function geolocate() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                // this will override freegeoip settings
+                defaultLat = position.coords.latitude;
+                defaultLng = position.coords.longitude;
+                defaultRad = position.coords.accuracy;
             });
         }
 
-        flag_prompted = true; // only ask once
-
+         // only ask once
+        flag_prompted = true;
     }
 
     function setradius(ref) {
@@ -149,6 +160,11 @@ jQuery(document).ready(function($) {
     if (google && google.maps) {
         // Google maps loaded
         initAutocomplete();
+    }
+    else {
+        // Google maps not loaded
+        // Still attempt to set country and state with freegeoip
+        freegeoip();
     }
 
 });
