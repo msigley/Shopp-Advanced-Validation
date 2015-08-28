@@ -50,10 +50,10 @@ This is based on the Google places autocomplete:
 https://google-developers.appspot.com/maps/documentation/javascript/examples/full/places-autocomplete-addressform
 
 ### Features
-Dropdown autocomplete address list based on user's current location, autofills remaining fields once an address is selected.
+Dropdown autocomplete address list based on user's current location, autofills remaining fields once an address is selected. Provides geolocated coordinates by browser, or using freegeoIP as a fallback. If Google is not supported in certain regions (e.g., China), the library is not loaded.
 
 ### Quirks
-Lookup chokes if you add in apartment numbers since these are not supported by Google. Also, would be good to ensure that there is no effect if the parent Google lib cannot load due to firewall (e.g., China).
+Lookup chokes if you add in apartment numbers since these are not supported by Google.
 
 ### How to use the Google places autocomplete on your Shopp
 
