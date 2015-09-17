@@ -32,6 +32,8 @@
 	    return this.each(function() {
 	    	var thisElement = $(this);
 	        thisElement.focusout(function(e) {
+						//Fix for buggy event timestamps in Firefox and IE
+						e.timeStamp = Date.now();
 	        	//Trim string and autocorrect whitespace issues
 	        	var elementValue = thisElement.val();
 	        	elementValue = $.trim(elementValue);
@@ -39,8 +41,8 @@
 	        	
 	        	//Attach event to options
 	        	options.e = e;
-	        	
-	            run_validator(elementValue, options, thisElement);
+
+	          run_validator(elementValue, options, thisElement);
 	        });
 	    });
 	};
@@ -111,7 +113,7 @@
 	                if (console) console.log(error_message);
 	            }
 	        }
-	    }, 30000); //30 seconds
+	    }, 10000); //10 seconds
 		
 	    // make ajax call to get validation results
 	    element.mailgunRequest = $.ajax({
@@ -142,3 +144,10 @@
 	    });
 	}
 })( jQuery );
+
+//Polyfill for Date.now support in IE8
+if (!Date.now) {
+  Date.now = function now() {
+    return new Date().getTime();
+  };
+}

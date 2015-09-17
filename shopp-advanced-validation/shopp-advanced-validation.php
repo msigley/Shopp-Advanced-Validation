@@ -10,9 +10,15 @@ License: GPLv3
 */
 class ShoppAdvancedValidation {
 	private static $object = null;
-	private static $contruct_args = array( 'mailgun_public_api_key' );
+	private static $contruct_args = 
+		array( 'mailgun_public_api_key', 
+			'google_maps_js_api_browser_key', 
+			'complexify_password_fields'
+			);
 	
-	private $mailgun_public_api_key = null;
+	private $mailgun_public_api_key = false;
+	private $complexify_password_fields = false;
+	private $google_maps_js_api_browser_key = false;
 	private $plugin_slug = null;
 	
 	public $url = null;
@@ -55,51 +61,79 @@ class ShoppAdvancedValidation {
 		if( is_ssl() )
 			$protocol = 'https';
 		
-		wp_register_script($this->plugin_slug.'_mailgun_validator', 
-				$this->url.'js/mailgun_validator.js',
-				array('jquery'),
-				$version
-				);
-		wp_register_script($this->plugin_slug.'_autocomplete_lib',
-                                '//maps.googleapis.com/maps/api/js?libraries=places',
-                                array('jquery')
-                                );
-                wp_register_script($this->plugin_slug.'_autocomplete',
-                                $this->url.'js/autocomplete.js',
-                                array($this->plugin_slug.'_autocomplete_lib'),
-                                $version
-                                );		
-		wp_register_script($this->plugin_slug.'_complexify_banlist', 
-				$this->url.'js/jquery.complexify.banlist.rot47.js',
-				false,
-				$version
-				);
-		wp_register_script($this->plugin_slug.'_complexify', 
-				$this->url.'js/jquery.complexify.js',
-				array('jquery', $this->plugin_slug.'_complexify_banlist'),
-				$version
-				);
-		wp_register_script($this->plugin_slug.'_checkout', 
-				$this->url.'js/checkout.js',
-				array($this->plugin_slug.'_mailgun_validator', $this->plugin_slug.'_complexify', $this->plugin_slug.'_autocomplete'),
-				$version
-				);
-		
-		wp_localize_script($this->plugin_slug.'_checkout', 'shoppAdvValid', 
-				array( 'mailgunPubKey' => $this->mailgun_public_api_key )
-				);
+		//Mailgun Email Validator Scripts
+		if( $this->mailgun_public_api_key ) {
+			wp_register_script($this->plugin_slug.'_mailgun_validator', 
+					$this->url.'js/mailgun_validator.js',
+					array('jquery'),
+					$version
+					);	
+			wp_register_script($this->plugin_slug.'_checkout_email', 
+					$this->url.'js/checkout_email.js',
+					array($this->plugin_slug.'_mailgun_validator', $this->plugin_slug.'_complexify'),
+					$version
+					);
+			wp_localize_script($this->plugin_slug.'_checkout_email', 'shoppAdvValid', 
+					array( 'mailgunPubKey' => $this->mailgun_public_api_key )
+					);
+		}
+
+		//Complexify Password Strength Scripts
+		if( $this->complexify_password_fields ) {
+			wp_register_script($this->plugin_slug.'_complexify_banlist', 
+					$this->url.'js/jquery.complexify.banlist.rot47.js',
+					false,
+					$version
+					);
+			wp_register_script($this->plugin_slug.'_complexify', 
+					$this->url.'js/jquery.complexify.js',
+					array('jquery', $this->plugin_slug.'_complexify_banlist'),
+					$version
+					);
+			wp_register_script($this->plugin_slug.'_checkout_password', 
+					$this->url.'js/checkout_password.js',
+					array($this->plugin_slug.'_complexify'),
+					$version
+					);
+		}
+
+		//Address Autocomplete Scripts
+		if( $this->google_maps_js_api_browser_key ) {
+			wp_register_script($this->plugin_slug.'_autocomplete_lib',
+					$protocol.'://maps.googleapis.com/maps/api/js?key='.$this->google_maps_js_api_browser_key.'&libraries=places',
+					array('jquery')
+					);
+			wp_register_script($this->plugin_slug.'_address_autocomplete',
+					$this->url.'js/autocomplete.js',
+					array($this->plugin_slug.'_autocomplete_lib'),
+					$version
+					);
+		}
 	}
 	
 	public function enqueue_css_js () {
 		if( is_checkout_page() || 
 			( is_account_page() && 'profile' == ShoppStorefront()->account['request'] ) ) {
-			wp_enqueue_script($this->plugin_slug.'_checkout');
+			if( $this->mailgun_public_api_key )
+				wp_enqueue_script($this->plugin_slug.'_checkout_email');
+			if( $this->complexify_passwords_fields )
+				wp_enqueue_script($this->plugin_slug.'_checkout_password');
+			if( $this->google_maps_js_api_browser_key )
+				wp_enqueue_script($this->plugin_slug.'_address_autocomplete');
 		}
 	}
 }
 
 //Support for Constants in wp-config.php
-if( defined('MAILGUN_PUBLIC_API_KEY') ) {
-	$args = array( 'mailgun_public_api_key' => MAILGUN_PUBLIC_API_KEY );
+if( defined('MAILGUN_PUBLIC_API_KEY') 
+	|| defined('GOOGLE_MAPS_JS_API_BROWSER_KEY') 
+	|| defined('COMPLEXIFY_PASSWORD_FIELDS') ) {
+	$args = array(); 
+	if( defined('MAILGUN_PUBLIC_API_KEY') )
+		$args['mailgun_public_api_key'] = MAILGUN_PUBLIC_API_KEY;
+	if( defined('GOOGLE_MAPS_JS_API_BROWSER_KEY') )
+		$args['google_maps_js_api_browser_key'] = GOOGLE_API_BROWSER_KEY;
+	if( defined('COMPLEXIFY_PASSWORD_FIELDS') )
+		$args['complexify_passwords_fields'] = COMPLEXIFY_PASSWORD_FIELDS;
 	$ShoppAdvancedValidation = ShoppAdvancedValidation::object( $args );
 }
