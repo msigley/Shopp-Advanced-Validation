@@ -23,9 +23,8 @@ Given an arbitrary address, Mailgun will validate the address based on:
 ### How to use the email validator on your Shopp
 
 1. Sign up for a Mailgun account get a public API key
-2. Add ```defined('MAILGUN_PUBLIC_API_KEY')``` into your wp-config.php file (with the API key from the previous step)
-3. Load the shopp-advanced-validation folder into your WP plugins directory and activate the plugin in the WP panel
-4. ```#mailgun-message``` can be customized to include your own HTML/CSS.
+2. Add ```defined('MAILGUN_PUBLIC_API_KEY', 'YOUR_PUBLIC_API_KEY');``` into your wp-config.php file (with the API key from the previous step)
+3. ```#mailgun-message``` can be customized to include your own HTML/CSS.
 
 
 ## 2. Password strength evaluation via the jQuery Complexify algorithm.
@@ -41,10 +40,11 @@ Casually enforces password strength via Complexity algorithm and also banned pas
 * Provides "Match" / "No Match" indicators for verification.
 
 ### How to use the password strength indicator on your Shopp
+1. Sign up for a Mailgun account get a public API key.
+2. Add ```defined('COMPLEXIFY_PASSWORD_FIELDS', true);``` into your wp-config.php file.
+3. ```<div id="password-strength"></div>``` and/or ```<div id="password-match"></div>``` can be customized to include your own HTML/CSS.
 
-```<div id="password-strength"></div>``` and/or ```<div id="password-match"></div>``` can be customized to include your own HTML/CSS.
-
-## 3. Google Places address auto complete.
+## 3. Google Maps Places API address auto complete.
 
 This is based on the Google places autocomplete:
 https://google-developers.appspot.com/maps/documentation/javascript/examples/full/places-autocomplete-addressform
@@ -56,5 +56,6 @@ Dropdown autocomplete address list based on user's current location, autofills r
 Lookup chokes if you add in apartment numbers since these are not supported by Google.
 
 ### How to use the Google places autocomplete on your Shopp
-
-Already enabled. You can include ```&placeholder=Enter your address``` in your checkout.php template for the billing-address and/or shipping-address fields for additional user prompting.
+1. Sign up for a Google Maps Javascript API browser key. https://developers.google.com/console/help/new/?hl=en_US#credentials-access-security-and-identity
+2. Add ```defined('GOOGLE_MAPS_JS_API_BROWSER_KEY', 'YOUR_BROWSER_KEY');``` into your wp-config.php file.
+3. You can include ```&placeholder=Enter your address``` in your checkout.php template for the billing-address and/or shipping-address fields for additional user prompting.
