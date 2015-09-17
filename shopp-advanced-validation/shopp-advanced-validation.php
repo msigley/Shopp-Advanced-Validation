@@ -70,7 +70,7 @@ class ShoppAdvancedValidation {
 					);	
 			wp_register_script($this->plugin_slug.'_checkout_email', 
 					$this->url.'js/checkout_email.js',
-					array($this->plugin_slug.'_mailgun_validator', $this->plugin_slug.'_complexify'),
+					array($this->plugin_slug.'_mailgun_validator'),
 					$version
 					);
 			wp_localize_script($this->plugin_slug.'_checkout_email', 'shoppAdvValid', 
@@ -134,6 +134,6 @@ if( defined('MAILGUN_PUBLIC_API_KEY')
 	if( defined('GOOGLE_MAPS_JS_API_BROWSER_KEY') )
 		$args['google_maps_js_api_browser_key'] = GOOGLE_API_BROWSER_KEY;
 	if( defined('COMPLEXIFY_PASSWORD_FIELDS') )
-		$args['complexify_passwords_fields'] = COMPLEXIFY_PASSWORD_FIELDS;
+		$args['complexify_password_fields'] = COMPLEXIFY_PASSWORD_FIELDS;
 	$ShoppAdvancedValidation = ShoppAdvancedValidation::object( $args );
 }
