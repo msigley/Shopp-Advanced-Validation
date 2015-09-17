@@ -3,7 +3,7 @@
 Plugin Name: Shopp Advanced Validation
 Plugin URI: http://github.com/msigley/
 Description: Implements advanced email validation on the shopp checkout page.
-Version: 1.3.0
+Version: 1.3.1
 Author: Matthew Sigley
 Author URI: http://github.com/msigley/
 License: GPLv3
@@ -116,7 +116,7 @@ class ShoppAdvancedValidation {
 			( is_account_page() && 'profile' == ShoppStorefront()->account['request'] ) ) {
 			if( $this->mailgun_public_api_key )
 				wp_enqueue_script($this->plugin_slug.'_checkout_email');
-			if( $this->complexify_passwords_fields )
+			if( $this->complexify_password_fields )
 				wp_enqueue_script($this->plugin_slug.'_checkout_password');
 			if( $this->google_maps_js_api_browser_key )
 				wp_enqueue_script($this->plugin_slug.'_address_autocomplete');
