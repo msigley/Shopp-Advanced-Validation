@@ -35,6 +35,7 @@ jQuery(document).ready(function($) {
         if (document.getElementById('billing-address') != null) {
 
             $("#billing-address").on('focus', function() {
+                // use browser for geolocation
                 if (!flag_prompted) geolocate();
                 if (defaultLat) setradius(autocomplete_bill);
             });
@@ -55,6 +56,7 @@ jQuery(document).ready(function($) {
         if (document.getElementById('shipping-address') != null) {
 
             $("#shipping-address").on('focus', function() {
+                // use browser for geolocation
                 if (!flag_prompted) geolocate();
                 if (defaultLat) setradius(autocomplete_ship);
             });
@@ -113,21 +115,21 @@ jQuery(document).ready(function($) {
     }
 
     function freegeoip() {
-            $.ajax({
-                url: 'https://freegeoip.net/json/?callback=',
-                dataType: 'json',
-                type: 'GET',
-                crossDomain: true,
-                success: function(data) {
-                    defaultLat = data.latitude;
-                    defaultLng = data.longitude;
-                    $("#billing-city").val() || $("#billing-state-menu").val() || ($("#billing-country").val(data.country_code), $(
-"#billing-state-menu").val(data.region_code));
-                    $("#shipping-city").val() || $("#shipping-state-menu").val() || ($("#shipping-country").val(data.country_code), $(
-"#shipping-state-menu").val(data.region_code));
-                },
-                timeout: 3000 // 3 second timeout
-            });
+        $.ajax({
+            url: 'https://freegeoip.net/json/?callback=',
+            dataType: 'json',
+            type: 'GET',
+            crossDomain: true,
+            success: function(data) {
+                defaultLat = data.latitude;
+                defaultLng = data.longitude;
+                $("#billing-city").val() || $("#billing-state-menu").val() || ($("#billing-country").val(data.country_code).trigger('change'), $(
+                    "#billing-state-menu").val(data.region_code));
+                $("#shipping-city").val() || $("#shipping-state-menu").val() || ($("#shipping-country").val(data.country_code).trigger('change'), $(
+                    "#shipping-state-menu").val(data.region_code));
+            },
+            timeout: 4000 // 4 second timeout for freegeoip response
+        });
     }
 
     // Bias the autocomplete object to the user's geographical location,
@@ -142,7 +144,7 @@ jQuery(document).ready(function($) {
             });
         }
 
-         // only ask once
+        // only ask once
         flag_prompted = true;
     }
 
@@ -160,8 +162,7 @@ jQuery(document).ready(function($) {
     if (google && google.maps) {
         // Google maps loaded
         initAutocomplete();
-    }
-    else {
+    } else {
         // Google maps not loaded
         // Still attempt to set country and state with freegeoip
         freegeoip();
