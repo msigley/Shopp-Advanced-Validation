@@ -24,6 +24,17 @@ jQuery(document).ready(function ($) {
 				return jQuery(this);
 		};
 	
+	$.shoppCustomerLookupSuccess = function( x ) {
+		if (x == 1) {
+			$.shoppCheckoutDiv.addClass('user-exists');
+			if ($.clearLatestCheckoutStep)
+				$.clearLatestCheckoutStep();
+		} else {
+			$.shoppCheckoutDiv.addClass('user-not-exists');
+		}
+		$.shoppCheckCustomerButton.removeClass('loading');
+	}
+	
 	$.shoppCustomerLookup = function( element ) {
 		var email = element.val();
 		
@@ -33,20 +44,23 @@ jQuery(document).ready(function ($) {
 			element.customerLookupRequest = null;
 		}
 		
-		//Prevent duplicate calls
-		if (element.data('customer-lookup-last-success-return')) {
-			if(email == element.data('customer-lookup-last-success-return'))
-				return;
-		}
-		
 		$.shoppCheckoutDiv.removeClass('user-not-exists').removeClass('user-exists');
 		
 		//Don't lookup empty emails
 		if (typeof email == 'undefined' || !email)
 			return;
-		
+
 		$.shoppCheckCustomerButton.addClass('loading');
 		element.setReadonly(true);
+
+		//Prevent duplicate calls
+		if (element.customerLookupLastSuccessReturn) {
+			if(email == element.customerLookupLastSuccessReturn.email) {
+				$.shoppCustomerLookupSuccess(element.customerLookupLastSuccessReturn.x);
+				element.setReadonly(false);
+				return;
+			}
+		}
 		
 		if ($.shoppCustomerEmail && $.shoppCustomerEmail.length) {
 			$.shoppCustomerEmail.val(email);
@@ -69,15 +83,10 @@ jQuery(document).ready(function ($) {
 			},
 			method: 'GET',
 			success: function (x, response) {
-				element.data('customer-lookup-last-success-return', email);
-				if (x == 1) {
-					$.shoppCheckoutDiv.addClass('user-exists');
-					if ($.clearLatestCheckoutStep)
-						$.clearLatestCheckoutStep();
-				} else {
-					$.shoppCheckoutDiv.addClass('user-not-exists');
-				}
-				$.shoppCheckCustomerButton.removeClass('loading');
+				element.customerLookupLastSuccessReturn = new Object();
+				element.customerLookupLastSuccessReturn.email = email;
+				element.customerLookupLastSuccessReturn.x = x;
+				$.shoppCustomerLookupSuccess(x);
 				element.setReadonly(false);
 			},
 			failure: function () {
