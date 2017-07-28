@@ -63,30 +63,30 @@ This is an advanced feature intended to help reduce the work on custom checkout 
 
 ### How to use the customer account existance verification on your Shopp
 1. In your custom Shopp checkout theme template: 
-    1. Add this code to the top of the template:
-		```
-		<?php 
-		$customer_email = shopp('checkout','get-email','mode=value'); 
-		$customer_exists_class = '';
-		if( !empty($customer_email) ) {
-			$customer_exists = shopp_customer_exists($customer_email, 'email'); 
-			$customer_exists_class = ' user-not-exists';
-			if( $customer_exists ) $customer_exists_class = ' user-exists';
-		}
-		?>
-		```
-		2. Change the class attribute on your ```<form>``` to include the following at the end:
-		```
-		<?php echo $customer_exists_class; ?>
-		```
-		3. Change your 'account-login' theme api call to something that resembles the following:
-		```
-		<?php shopp('customer','account-login', array('value' => $customer_email, 'data-customer-lookup-last-success-return' => $customer_email)); ?>
-		<input id="check-for-customer" type="button" value="Next">
-		```
+	1. Add this code to the top of the template:
+	```
+	<?php 
+	$customer_email = shopp('checkout','get-email','mode=value'); 
+	$customer_exists_class = '';
+	if( !empty($customer_email) ) {
+		$customer_exists = shopp_customer_exists($customer_email, 'email'); 
+		$customer_exists_class = ' user-not-exists';
+		if( $customer_exists ) $customer_exists_class = ' user-exists';
+	}
+	?>
+	```
+	2. Change the class attribute on your ```<form>``` to include the following at the end:
+	```
+	<?php echo $customer_exists_class; ?>
+	```
+	3. Change your 'account-login' theme api call to something that resembles the following:
+	```
+	<?php shopp('customer','account-login', array('value' => $customer_email, 'data-customer-lookup-last-success-return' => $customer_email)); ?>
+	<input id="check-for-customer" type="button" value="Next">
+	```
 2. The customer account existance should now be working. 
-		1. If an account with the customer's email exists, a "user-exists" css class is added to the shopp checkout form:
-				* The css selector for this is ```#shopp #checkout .user-exists```.
-		2. If an account with the customer's email does not exist, a "user-not-exists" css class is added to the shopp checkout form:
-				* The css selector for this is ```#shopp #checkout .user-not-exists```.
+	1. If an account with the customer's email exists, a "user-exists" css class is added to the shopp checkout form:
+		* The css selector for this is ```#shopp #checkout .user-exists```.
+	2. If an account with the customer's email does not exist, a "user-not-exists" css class is added to the shopp checkout form:
+		* The css selector for this is ```#shopp #checkout .user-not-exists```.
 3. Use custom css in your custom shopp theme to show/hide or change the look of elements based on whether the customer has an existing account or not.
