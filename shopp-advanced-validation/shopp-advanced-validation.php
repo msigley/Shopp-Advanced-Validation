@@ -3,20 +3,24 @@
 Plugin Name: Shopp Advanced Validation
 Plugin URI: http://github.com/msigley/
 Description: Implements advanced email validation on the shopp checkout page.
-Version: 1.3.1
+Version: 1.4.0
 Author: Matthew Sigley
 Author URI: http://github.com/msigley/
 License: GPLv3
 */
+require_once( 'lib/mailcheck.php' );
+
 class ShoppAdvancedValidation {
 	private static $object = null;
+	private static $mailcheck = null;
 	private static $contruct_args = 
-		array( 'mailgun_public_api_key', 
+		array( 'customer_email_validation', 
 			'google_maps_js_api_browser_key', 
-			'complexify_password_fields'
+			'complexify_password_fields',
+			'customer_lookup'
 			);
 	
-	private $mailgun_public_api_key = false;
+	private $customer_email_validation = false;
 	private $complexify_password_fields = false;
 	private $google_maps_js_api_browser_key = false;
 	private $plugin_slug = null;
@@ -44,6 +48,10 @@ class ShoppAdvancedValidation {
 		
 		add_action( 'init', array( $this, 'register_css_js' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_css_js' ) );
+		add_action( 'wp_ajax_customer_email_lookup', array($this, 'customer_email_lookup') );
+		add_action( 'wp_ajax_nopriv_customer_email_lookup', array($this, 'customer_email_lookup') );
+		add_action( 'wp_ajax_customer_email_validation', array($this, 'customer_email_validation') );
+		add_action( 'wp_ajax_nopriv_customer_email_validation', array($this, 'customer_email_validation') );
 	}
 	
 	static function &object( $args=array() ) {
@@ -61,20 +69,28 @@ class ShoppAdvancedValidation {
 		if( is_ssl() )
 			$protocol = 'https';
 		
-		//Mailgun Email Validator Scripts
-		if( $this->mailgun_public_api_key ) {
-			wp_register_script($this->plugin_slug.'_mailgun_validator', 
-					$this->url.'js/mailgun_validator.js',
+		//Shopp Customer Lookup
+		if( $this->customer_lookup ) {
+			wp_register_script($this->plugin_slug.'_customer_lookup', 
+					$this->url.'js/jquery.customer_lookup.js',
 					array('jquery'),
+					$version);
+		}
+
+		//Shopp Customer Email Validation Scripts
+		if( $this->customer_email_validation ) {
+			$depends = array('jquery');
+			if( $this->customer_lookup )
+				$depends[] = $this->plugin_slug.'_customer_lookup';
+			wp_register_script($this->plugin_slug.'_email_validator', 
+					$this->url.'js/email_validator.js',
+					$depends,
 					$version
 					);	
 			wp_register_script($this->plugin_slug.'_checkout_email', 
 					$this->url.'js/checkout_email.js',
-					array($this->plugin_slug.'_mailgun_validator'),
+					array($this->plugin_slug.'_email_validator'),
 					$version
-					);
-			wp_localize_script($this->plugin_slug.'_checkout_email', 'shoppAdvValid', 
-					array( 'mailgunPubKey' => $this->mailgun_public_api_key )
 					);
 		}
 
@@ -109,31 +125,86 @@ class ShoppAdvancedValidation {
 					$version
 					);
 		}
+		
+		wp_register_style($this->plugin_slug.'_advanced_validation_css',
+			$this->url.'shopp-advanced-validation.css', 
+			false, 
+			$version);
+		
 	}
 	
 	public function enqueue_css_js () {
 		if( is_checkout_page() || 
 			( is_account_page() && 'profile' == ShoppStorefront()->account['request'] ) ) {
-			if( $this->mailgun_public_api_key )
+			if( $this->customer_email_validation ) {
+				$localize_args = array( 'ajax_url' => admin_url('admin-ajax.php', 'https') );
+				if( $this->customer_lookup && is_checkout_page() ) {
+					$localize_args['validateEmailFieldSelector'] = '#account-login-checkout';
+				}
+				wp_localize_script($this->plugin_slug.'_email_validator', 'shoppAdvValid', $localize_args);
 				wp_enqueue_script($this->plugin_slug.'_checkout_email');
+			}
 			if( $this->complexify_password_fields )
 				wp_enqueue_script($this->plugin_slug.'_checkout_password');
 			if( $this->google_maps_js_api_browser_key )
 				wp_enqueue_script($this->plugin_slug.'_address_autocomplete');
 		}
+		
+		if( is_checkout_page() ) {
+			if( $this->customer_lookup ) {
+				wp_localize_script($this->plugin_slug.'_customer_lookup', 'shoppCustomerLookup', 
+					array( 'ajax_url' => admin_url('admin-ajax.php', 'https') ));
+				wp_enqueue_script($this->plugin_slug.'_customer_lookup');
+			}
+		}
+		wp_enqueue_style($this->plugin_slug.'_advanced_validation_css');
+	}
+
+	public function customer_email_lookup() {
+		$email = $_GET['shopp_customer_email_lookup'];
+		$email = html_entity_decode($email);
+
+		if( shopp_customer_exists($email, 'email') || false !== email_exists($email) ){
+			echo '1';
+			die();
+		}
+		echo '0';
+		die();
+	}
+	
+	public function customer_email_validation() {
+		if ( ! self::$mailcheck instanceof MailCheck )
+			self::$mailcheck = new MailCheck();
+		
+		$email = $_GET['shopp_customer_email_validation'];
+		$email = html_entity_decode($email);
+
+		$returnObj = new StdClass();
+		$returnObj->address = $email;
+		$returnObj->is_valid = self::$mailcheck->validate_email( $email, true ); //Validate DNS of email's domain
+		if( !$returnObj->is_valid )
+			$returnObj->did_you_mean = self::$mailcheck->suggest( $email );
+		else
+			$returnObj->did_you_mean = false;
+		echo json_encode( $returnObj );
+		die();
 	}
 }
 
 //Support for Constants in wp-config.php
-if( defined('MAILGUN_PUBLIC_API_KEY') 
+if( defined('CUSTOMER_EMAIL_VALIDATION') 
 	|| defined('GOOGLE_MAPS_JS_API_BROWSER_KEY') 
-	|| defined('COMPLEXIFY_PASSWORD_FIELDS') ) {
+	|| defined('COMPLEXIFY_PASSWORD_FIELDS')
+	|| defined('CUSTOMER_LOOKUP') ) {
 	$args = array(); 
-	if( defined('MAILGUN_PUBLIC_API_KEY') )
-		$args['mailgun_public_api_key'] = MAILGUN_PUBLIC_API_KEY;
+	if( defined('CUSTOMER_EMAIL_VALIDATION') )
+		$args['customer_email_validation'] = CUSTOMER_EMAIL_VALIDATION;
 	if( defined('GOOGLE_MAPS_JS_API_BROWSER_KEY') )
 		$args['google_maps_js_api_browser_key'] = GOOGLE_API_BROWSER_KEY;
 	if( defined('COMPLEXIFY_PASSWORD_FIELDS') )
 		$args['complexify_password_fields'] = COMPLEXIFY_PASSWORD_FIELDS;
+	if( defined('CUSTOMER_LOOKUP')){
+		$args['customer_lookup'] = CUSTOMER_LOOKUP;
+	}
 	$ShoppAdvancedValidation = ShoppAdvancedValidation::object( $args );
 }
